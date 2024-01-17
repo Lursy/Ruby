@@ -34,6 +34,8 @@ export class stickerMedia{
       
       let quality = Math.floor(1024*1024*40/buffer.byteLength);
       if(quality>80) quality=80;
+      if(quality<10) quality=10;
+      
       let buff: Buffer;
 
       if(mmedia.mimetype.split("/")[0] == "image"){
