@@ -1,12 +1,10 @@
 import {
     makeWASocket, DisconnectReason, fetchLatestBaileysVersion,
     makeCacheableSignalKeyStore, useMultiFileAuthState,
-    Browsers
 } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 import pino from "pino"
 
-export type WASocket = ReturnType<typeof makeWASocket>;
 
 export async function connectToWhatsApp() {
     const { version } = await fetchLatestBaileysVersion();
