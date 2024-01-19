@@ -1,4 +1,4 @@
-import { Message, essential } from "../core/messages";
+import { Message } from "../core/messages";
 import { stickerMedia } from "./utils/sticker";
 
 
@@ -11,33 +11,32 @@ const app = {
         },
         run: async  (message: Message) => {
             let functions = Object.keys(app);
-            let text = '*`▌Lista de comandos▐`*\n\n';
+            let text = '\t\t\`\`\`╔ Ruby ╗\n\t\t╚═════╝\`\`\`\n\n\n';
             for(let key = 0; key != functions.length; key++){
                 text += "* " + `_.${functions[key]}_` + "\n"
             }
+            text += "\n══════════════\n*Developed by*: _Lursy_\n══════════════\n*GitHub*: https://github.com/Lursy/Ruby/ \n═════════════════════════"
             message.reply(text);
         },
     },
     "sticker": {
         help: {
-
             description: "O bot transforma uma imagem em figurinha",
-            use: "(marque uma imagem).sticker\n\t(envie uma imagem).sticker",
+            use: "\t(marque uma imagem)\n\t.sticker (1 <optional type of image resizing>)\n\n\t(envie uma imagem)\n\t.sticker (1 <optional type of image resizing>)",
             response: "<sticker>"
         },
-        run: async (message: Message) => {
+        run: async (message: Message, type) => {
             let media = message.media();
-            let msg_core: essential = message.essential()
 
-            if(!media && msg_core.quoted){
-                let normalize_quoted = message.essential(msg_core.quoted);
-                media = message.media(normalize_quoted);
+            if(!media && message.quoted){
+                let quot = message.essential(message.quoted);
+                media = message.media(quot);
             }
 
             if(media){
                 await message.react("⏱️");
                 let stk = new stickerMedia();
-                let buff = await stk.makeStiker(media);
+                let buff = await stk.makeStiker(media, type);
                 await message.send({sticker: buff});
                 await message.react("✅");
             }else{
@@ -58,32 +57,25 @@ const app = {
             message.reply({edit: pong?.key, text: `Pong\nLatência: ${latency}ms`});
         },
     },
-    // "profile": {
-    //     help: {
-    //         description: "Retorna foto, nome e biografia do usuário",
-    //         use: ".profile (<@mentioned> opcional)",
-    //         response: "<Detalhes do perfil>"
-    //     },
-    //     run: async (message: Message) => {
-    //         let isGroup = message.key.remoteJid?.endsWith("@g.us");
-    //         let name = message.base.pushName;
-    //         let userId: string;
+    "me": {
+        help: {
+            description: "Retorna foto, nome e biografia do usuário",
+            use: ".me",
+            response: "<Detalhes do perfil>"
+        },
+        run: async (message: Message) => {
+            let group = await message.getGroup();
+            let name = message.base.pushName;
 
-    //         if(isGroup){
-    //             userId = message.key.participant;
-    //             if(message.base.message[message.essential().type].contextInfo?.mentionedJid[0] !== undefined){
-    //             name = "";
-    //                 let gp = await message.socket.groupMetadata(message.key.remoteJid);
-    //                 userId = message.base.message[message.essential().type].contextInfo.mentionedJid[0];
-    //             }
-    //         }else{
-    //             userId = message.key.remoteJid;
-    //         }
+            if(group){
+                let user = await message.user(group.idSender);
+                message.send({caption: `\`\`\`″${user.bio.status}″\`\`\`\n\n\n\t${group.name}\n╔═══════════╡USER│\n║ Nome\n╠═\t*${name}*\n║ Status\n╠═\t${group.isAdmin? "*" + group.isAdmin.toLocaleUpperCase() + "*":"_MEMBER_"}\n╚═══════════╡INFO│`, image: user.profile.data, mentions: [group.idSender]});
+            }else{
+                message.send("Este comando só é executado em grupos");
+            }
 
-    //         let info_user = await this.user(userId, message.socket);
-    //         message.send({caption: `*${name}*\n\n\`\`\`${info_user.bio.status}\`\`\``, image: info_user.profile.data});
-    //     }
-    // },
+        }
+    },
     "help": {
         help: {
             description: "Exibe informações sobre determinado comando",
@@ -91,6 +83,7 @@ const app = {
             response: "<detalhes do comando>"
         },
         run: async (message: Message, command: string) => {
+            console.log(command)
             var text = "comando não identificado";
             if(Object.keys(app).includes(command)){
                 text = `*${command}*\n\n\n` + "```";

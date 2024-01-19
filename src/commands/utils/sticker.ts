@@ -1,11 +1,10 @@
-import { BufferedEventData, downloadContentFromMessage, downloadEncryptedContent, downloadMediaMessage, proto } from "@whiskeysockets/baileys";
+import { downloadContentFromMessage, proto } from "@whiskeysockets/baileys";
 import { writeFileSync, unlinkSync, readFileSync } from "fs";
-import webp from "node-webpmux";
 import ffmpeg from "fluent-ffmpeg";
 import sharp from "sharp";
 
 export class stickerMedia{
-    makeStiker = async (mmedia: proto.Message.IVideoMessage | proto.Message.IImageMessage | proto.Message.IDocumentMessage) => {
+    makeStiker = async (mmedia: proto.Message.IVideoMessage | proto.Message.IImageMessage | proto.Message.IDocumentMessage, type: string = "0") => {
       let buffer = Buffer.from([]);
       let namePath = "sticker";
       console.log(mmedia);
@@ -35,16 +34,16 @@ export class stickerMedia{
       let quality = Math.floor(1024*1024*40/buffer.byteLength);
       if(quality>80) quality=80;
       if(quality<10) quality=10;
-      
+
       let buff: Buffer;
 
-      if(mmedia.mimetype.split("/")[0] == "image"){
+      if(mmedia.mimetype.split("/")[0] == "image" && type === "0"){
         buff = await sharp(buffer, {animated: true})
         .resize(512, 512)
         .webp({ quality: quality })
         .toBuffer();
       }
-      else{
+      else if(type === "1"){
         writeFileSync(path, buffer);
         buff = await new Promise(async (resolve, reject) => {
           ffmpeg(path)
