@@ -37,8 +37,13 @@ const app = {
                 await message.react("⏱️");
                 let stk = new stickerMedia();
                 let buff = await stk.makeStiker(media, type);
-                await message.send({sticker: buff});
-                await message.react("✅");
+                if(buff){
+                    await message.send({sticker: buff});
+                    await message.react("✅");
+                }else{
+                    await message.reply("Ocorreu algum erro durante a conversão.")
+                    await message.react("❌");
+                }
             }else{
                 message.send({text: "Use este comando em imagens ou videos"});
             }
@@ -59,7 +64,7 @@ const app = {
     },
     "me": {
         help: {
-            description: "Retorna foto, nome e biografia do usuário",
+            description: "Retorna foto, nome e status do usuário",
             use: ".me",
             response: "<Detalhes do perfil>"
         },

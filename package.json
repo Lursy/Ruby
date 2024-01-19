@@ -27,7 +27,6 @@
     "axios": "^1.6.5",
     "fluent": "^0.13.0",
     "fluent-ffmpeg": "^2.1.2",
-    "link-preview-js": "^3.0.5",
     "pino": "^8.17.2",
     "qrcode-terminal": "^0.12.0"
   }
