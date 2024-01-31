@@ -13,7 +13,7 @@ export type essential = {
 
 export class Message{
     socket: WASocket;
-    base: WAMessage;
+    base: proto.IWebMessageInfo;
     key:  proto.IMessageKey | undefined | null;
     text: string;
     type: string;
@@ -27,6 +27,7 @@ export class Message{
         name: string, idGroup: string,
         idSender: string,
         isAdmin: string
+        members: string[]
     }
 
     constructor (m: proto.IWebMessageInfo[], socket: WASocket){
@@ -53,8 +54,9 @@ export class Message{
         else if(type_details.includes("videoMessage")){
             this.type = "videoMessage";
             this.text = message.videoMessage?.caption;
-        }
-        else if(type_details.includes("imageMessage")){
+        }else if(type_details.includes("stickerMessage")){
+            this.type = "stickerMessage";
+        }else if(type_details.includes("imageMessage")){
             this.type = "imageMessage";
             this.text = message.imageMessage?.caption;
         }
@@ -95,13 +97,13 @@ export class Message{
     getGroup = async () => {
         if(this.key.remoteJid?.endsWith("@g.us")){
             let groupInfo = await this.socket.groupMetadata(this.key.remoteJid);
-            console.log(this.key.remoteJid)
-            console.log(groupInfo.participants.find((participant) => participant.id === this.key.participant).admin);
+            let members = groupInfo.participants
             this.group = {
                 "name": groupInfo.subject,
                 "idGroup": this.key.remoteJid,
                 "idSender": this.key.participant,
-                "isAdmin": groupInfo.participants.find((participant) => participant.id === this.key.participant).admin
+                "members": members.map(participant => participant.id),
+                "isAdmin": members.find((participant) => participant.id === this.key.participant).admin
             };
     
             return this.group
@@ -182,7 +184,7 @@ export class Message{
     }
     
     react = (emoji: string) => {
-        return this.send({react:{text: emoji, key: this.key}})
+        return this.send({react:{text: emoji, key: this.key}});
     }
 
     send = (content: string | AnyMessageContent) => {

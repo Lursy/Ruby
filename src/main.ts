@@ -1,6 +1,6 @@
 import {
     makeWASocket, DisconnectReason, fetchLatestBaileysVersion,
-    makeCacheableSignalKeyStore, useMultiFileAuthState,
+    makeCacheableSignalKeyStore, useMultiFileAuthState
 } from '@whiskeysockets/baileys'
 import { Message } from "./core/messages";
 import { call } from "./commands/manager";
@@ -48,16 +48,22 @@ export async function main() {
     })
     
     sock.ev.on('messages.upsert', async m => {
-        if(m.messages[0].key.remoteJid === "status@broadcast") return;
-        if(m.type != "notify") return;
+        try{
+            if(m.messages[0].key.remoteJid === "status@broadcast") return;
+            if(m.type != "notify") return;
 
-        let message = new Message(m.messages, sock);
-        let core_message = message.essential();
-        console.log(message);
-
-        if(core_message.isCommand){
-            let separate = core_message.text.split(" ");
-            call(separate[0].slice(1), separate.slice(1), message);
+            console.log(m.messages[0])
+    
+            let message = new Message(m.messages, sock);
+            let core_message = message.essential();
+    
+            if(core_message.isCommand){
+                let separate = core_message.text.split(" ");
+                call(separate[0].slice(1), separate.slice(1), message);
+            }
+        }catch(err){
+            console.log(err);
+            console.log(m.messages[0]);
         }
     })
 }
