@@ -1,8 +1,2 @@
-# modules
 node_modules/
-
-#auth
 auth/
-
-#logs
-*.log

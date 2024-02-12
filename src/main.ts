@@ -1,72 +1,57 @@
-import {
-    makeWASocket, DisconnectReason, fetchLatestBaileysVersion,
-    makeCacheableSignalKeyStore, useMultiFileAuthState
-} from '@whiskeysockets/baileys'
-import { Message } from "./core/messages";
-import { call } from "./commands/manager";
+import { makeWASocket, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from '@whiskeysockets/baileys'
+import { receiveMessages } from './core/events/onMessages';
 import { Boom } from '@hapi/boom'
 import pino from "pino"
 
+export const bV = require("./../package.json").version;
+const NodeCache = require("node-cache");
+
+const logo = `
+\t┌────────────────────╮
+\t│        Ruby        │
+\t├────────────────────┤
+\t├  DEVELOPER: Lursy  ┤
+\t├   versão:  ${bV}   ┤
+\t├  github.com/lursy  ┤
+\t└────────────────────╯
+`;
+
+const msgRetryCounterCache = new NodeCache();
+
 
 export async function main() {
+    const { state, saveCreds } = await useMultiFileAuthState("./auth");
     const { version } = await fetchLatestBaileysVersion();
-    const auth = await useMultiFileAuthState(process.cwd() + "/auth/");
-    const botVersion = require("../package.json").version;
-    const logger = pino({ level: "fatal" }) as any;
     
-
     const sock = makeWASocket({
-        version,
-        auth: {
-            creds: auth.state.creds,
-            keys: await makeCacheableSignalKeyStore(
-                auth.state.keys,
-                logger
-            )
-        },
+        logger: pino({ level: "silent" }) as any,
+        browser: ["Ruby", "Desktop", bV],
         printQRInTerminal: true,
-        browser: ["Ruby", "Desktop", botVersion],
+        msgRetryCounterCache,
+        mobile: false,
+        auth: state,
+        version
     });
     
-    sock.ev.on('creds.update', auth.saveCreds);
-
+    sock.ev.on('creds.update', saveCreds);
     
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect } = update;
         
-        if(connection === 'close' && lastDisconnect !== undefined) {
+        if(connection === 'close') {
             const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
-            console.log('connection closed due to ', lastDisconnect.error, ', reconnecting ', shouldReconnect);
 
             if(shouldReconnect) {
-                main();
+                console.log("Reconectando...");
+                main()
             }
 
         } else if(connection === 'open') {
-            console.log('opened connection');
-        }
-    })
-    
-    sock.ev.on('messages.upsert', async m => {
-        try{
-            if(m.messages[0].key.remoteJid === "status@broadcast") return;
-            if(m.type != "notify") return;
-
-            console.log(m.messages[0])
-    
-            let message = new Message(m.messages, sock);
-            let core_message = message.essential();
-    
-            if(core_message.isCommand){
-                let separate = core_message.text.split(" ");
-                call(separate[0].slice(1), separate.slice(1), message);
-            }
-        }catch(err){
-            console.log(err);
-            console.log(m.messages[0]);
+            receiveMessages(sock);
+            process.stdout.write('\x1bc');
+            console.log(logo);
         }
     })
 }
 
-
-main();
+console.log(main());
