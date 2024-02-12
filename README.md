@@ -1,37 +1,33 @@
-# Ruby - Whatsapp Bot
 
-## Install
-> require nodeJS   
-> require git
+## Installation
 
-- `git clone https://github.com/Lursy/Ruby`
-- `npm install`
-- `npm run dev`
+> **Requirements**
+>
+> - [NodeJS](https://nodejs.org)
+> - [Git](https://git-scm.com)
+
+```shell
+# Clone repository
+git clone https://github.com/Lursy/Ruby
+cd ./Ruby/
+
+# Install dependencies
+npm install
+
+# Start bot
+npm run dev
+```
 
 ## Commands:
-> Alias
-> - Gerenciador de nomes para comandos   
 
+All bot commands. Use `<prefix>menu` for more details.
 
-> help
-> - Exibe instruções para comando mensionado
-
-
-> menu
-> - Exibe lista de comandos
-
-
-> stck
-> - Cria figurinhas
-
-
-> ping
-> - Envia latência do bot
-
-
-> unlk
-> - Desbloqueia medias em visualização unica   
-
-
-> to
-> - Transforma figurinha em media   
+| Name  | Description                                                       |  Status   |
+| :---- | :---------------------------------------------------------------- | :-------: |
+| alias | Gerenciador de apelidos para comandos                             | Funcional |
+| help  | Exibe instruções dos comandos                                     | Funcional |
+| menu  | Exibe lista de comandos                                           | Funcional |
+| stck  | Cria figurinhas                                                   | Funcional |
+| ping  | Mostra a latência de envio das mensagens do bot                   | Funcional |
+| unlk  | Reenvia mensagens de visualização única, sem a visualização única | Funcional |
+| to    | Tranforma figurinhas em video/imagem                              | Funcional |
