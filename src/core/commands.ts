@@ -22,7 +22,7 @@ export class menu implements command{
     description: string = "Exibe lista de comandos do bot";
     adminOnly: boolean = false;
     groupOnly: boolean = false;
-    example: string = "use: *.menu*"
+    example: string = "use: *.menu*";
 
     run = async (message: Message) => {
         let content = initResponse(message.name, message.key.id);

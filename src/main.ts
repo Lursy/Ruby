@@ -1,19 +1,20 @@
 import { makeWASocket, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from '@whiskeysockets/baileys'
 import { receiveMessages } from './core/events/onMessages';
-import { Boom } from '@hapi/boom'
-import pino from "pino"
+import { Log } from './core/utils/log';
+import { Boom } from '@hapi/boom';
+import pino from "pino";
 
 export const bV = require("./../package.json").version;
 const NodeCache = require("node-cache");
 
 const logo = `
-\t┌────────────────────╮
-\t│        Ruby        │
-\t├────────────────────┤
-\t├  DEVELOPER: Lursy  ┤
-\t├   versão:  ${bV}   ┤
-\t├  github.com/lursy  ┤
-\t└────────────────────╯
+┌────────────────────╮
+│        Ruby        │
+├────────────────────┤
+├  DEVELOPER: Lursy  ┤
+├   versão:  ${bV}   ┤
+├  github.com/lursy  ┤
+└────────────────────╯
 `;
 
 const msgRetryCounterCache = new NodeCache();
@@ -48,8 +49,9 @@ export async function main() {
 
         } else if(connection === 'open') {
             receiveMessages(sock);
+            const log = new Log(logo);
             process.stdout.write('\x1bc');
-            console.log(logo);
+            log.center();
         }
     })
 }
