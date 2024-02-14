@@ -1,7 +1,8 @@
-import { WASocket } from "@whiskeysockets/baileys";
+import { DICT_VERSION, WASocket } from "@whiskeysockets/baileys";
 import { Message } from "../utils/Message";
 import { readFileSync} from "fs";
 import { command } from "../commands";
+import { banner, device } from "../utils/interface";
 
 
 export async function receiveMessages(sock: WASocket){
@@ -17,7 +18,8 @@ export async function receiveMessages(sock: WASocket){
                     let separate = message.text.slice(1).split(" ");
                     let commands = require("../commands");
 
-                    console.log(`User: ${message.name}\nCommand: ${message.isCommand}\nMessage: ${message.text}\n`);
+                    let data = new Date();
+                    banner(`────────────────────────\nUser: ${message.name}\nCommand: ${message.isCommand}\nMessage: ${message.text}\nDevice: ${device(message.key.id)}\nHora: ${data.getHours()}:${data.getMinutes()}:${data.getSeconds()}\n────────────────────────\n\n`);
                     
                     if(Object.keys(commands).includes(separate[0])){
                         let command: command = new commands[separate[0]]();

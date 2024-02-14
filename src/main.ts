@@ -1,42 +1,68 @@
 import { makeWASocket, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from '@whiskeysockets/baileys'
 import { receiveMessages } from './core/events/onMessages';
-import { Log } from './core/utils/log';
+import { banner } from './core/utils/interface';
 import { Boom } from '@hapi/boom';
+import inquirer from 'inquirer';
 import pino from "pino";
 
-export const bV = require("./../package.json").version;
+
 const NodeCache = require("node-cache");
-
-const logo = `
-┌────────────────────╮
-│        Ruby        │
-├────────────────────┤
-├  DEVELOPER: Lursy  ┤
-├   versão:  ${bV}   ┤
-├  github.com/lursy  ┤
-└────────────────────╯
-`;
-
 const msgRetryCounterCache = new NodeCache();
 
 
 export async function main() {
+    process.stdout.write('\x1bc'); 
     const { state, saveCreds } = await useMultiFileAuthState("./auth");
     const { version } = await fetchLatestBaileysVersion();
+
+    let usePairingCode = false;
+    
+    if(!state.creds.registered){
+        const answers = await inquirer.prompt([
+            {
+                type: "list",
+                name: "usePairingCode",
+                message: "Selecione o método de conexão:",
+                choices: [
+                    { name: "Conectar via Qr-Code", value: false },
+                    { name: "Conectar via Número", value: true },
+                ],
+                default: false,
+            },
+        ]);
+        usePairingCode = answers.usePairingCode;
+    }
     
     const sock = makeWASocket({
         logger: pino({ level: "silent" }) as any,
-        browser: ["Ruby", "Desktop", bV],
-        printQRInTerminal: true,
+        browser: ['Mac OS', 'chrome', '121.0.6167.159'],
+        printQRInTerminal: !usePairingCode,
         msgRetryCounterCache,
         mobile: false,
         auth: state,
         version
     });
+
+    if (usePairingCode) {
+        const phoneNumber = String((await inquirer.prompt([
+            {
+                type: 'input',
+                name: 'phoneNumber',
+                message: 'Número de telefone:',
+                validate: (value) => {
+                    const regex = /^\+?[1-9]\d{1,14}$/;
+                    return regex.test(value) || 'Por favor, digite um número de telefone válido.';
+                },
+            }
+        ])).phoneNumber);
+        let code = await sock.requestPairingCode(phoneNumber);
+        console.log(`Your code: ${code}\n`);
+        console.log("Open your WhatsApp, go to Connected Devices > Connect a new Device > Connect using phone number.");
+    }
     
     sock.ev.on('creds.update', saveCreds);
     
-    sock.ev.on('connection.update', (update) => {
+    sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
         
         if(connection === 'close') {
@@ -49,11 +75,10 @@ export async function main() {
 
         } else if(connection === 'open') {
             receiveMessages(sock);
-            const log = new Log(logo);
-            process.stdout.write('\x1bc');
-            log.center();
+            banner();
         }
     })
 }
 
-console.log(main());
+
+main();

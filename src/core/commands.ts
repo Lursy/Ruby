@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "fs"
 import { downloads } from "./utils/downloads";
 import { Conversor } from "./utils/conversor";
 import { Message } from "./utils/Message";
-import { bV } from "../main";
+import { bV, device } from "./utils/interface";
 
 export interface command {
     description: string;
@@ -12,10 +12,8 @@ export interface command {
 }
 
 
-function initResponse(name: string, id:string){
-    let device = id.length>22?"ANDROID":id.startsWith("3E")?"Wa Web":"IOS";
-
-    return `\`\`\`╓∙User:    ⌜${name}⌟\n╟∙Device:  ⌜${device}⌟\n╟∙Version: ⌜${bV}⌟\n╙∙Prefix:  ⌜.⌟\`\`\`\n\n`
+function initResponse(name: string, id: string){
+    return `\`\`\`╓∙User:    ⌜${name}⌟\n╟∙Device:  ⌜${device(id)}⌟\n╟∙Version: ⌜${bV}⌟\n╙∙Prefix:  ⌜.⌟\`\`\`\n\n`
 }
 
 export class menu implements command{
