@@ -7,8 +7,8 @@ import pino from "pino";
 
 
 const NodeCache = require("node-cache");
-const msgRetryCounterCache = new NodeCache();
-
+const cacheMedia =  new NodeCache({stdTTL: 60 * 5, useClones: false})
+const cacheMSG =  new NodeCache({stdTTL: 60 * 5, useClones: false})
 
 export async function main() {
     process.stdout.write('\x1bc'); 
@@ -37,11 +37,13 @@ export async function main() {
         logger: pino({ level: "silent" }) as any,
         browser: ['Mac OS', 'chrome', '121.0.6167.159'],
         printQRInTerminal: !usePairingCode,
-        msgRetryCounterCache,
+        mediaCache: cacheMedia,
+        msgRetryCounterCache: cacheMSG,
         mobile: false,
         auth: state,
         version
     });
+
 
     if (usePairingCode) {
         const phoneNumber = String((await inquirer.prompt([
@@ -58,6 +60,9 @@ export async function main() {
         let code = await sock.requestPairingCode(phoneNumber);
         console.log(`Your code: ${code}\n`);
         console.log("Open your WhatsApp, go to Connected Devices > Connect a new Device > Connect using phone number.");
+    }else{
+        state.creds.registered = true;
+        saveCreds();
     }
     
     sock.ev.on('creds.update', saveCreds);

@@ -1,8 +1,8 @@
-import { DICT_VERSION, WASocket } from "@whiskeysockets/baileys";
+import { WASocket } from "@whiskeysockets/baileys";
 import { Message } from "../utils/Message";
 import { readFileSync} from "fs";
 import { command } from "../commands";
-import { banner, device } from "../utils/interface";
+import { device } from "../utils/interface";
 
 
 export async function receiveMessages(sock: WASocket){
@@ -11,22 +11,23 @@ export async function receiveMessages(sock: WASocket){
             try{
                 if(m.messages[0].key.remoteJid === "status@broadcast") return;
                 if(m.type != "notify") return;
-        
+
                 let message = new Message(m.messages, sock);
-                
+                let data = new Date();
+
+                console.log(`╓∙User: ${message.name}\n╟∙Command: ${message.isCommand}\n╟∙Message: ${message.text?message.text.length<25?message.text:message.text.substring(0, 20)+"[...]":message.type}\n╟∙Device: ${device(message.key.id)}\n╙∙Hora: ${data.toISOString().slice(11, 23)}\n`);
+
                 if(message.isCommand){
                     let separate = message.text.slice(1).split(" ");
                     let commands = require("../commands");
 
-                    let data = new Date();
-                    banner(`────────────────────────\nUser: ${message.name}\nCommand: ${message.isCommand}\nMessage: ${message.text}\nDevice: ${device(message.key.id)}\nHora: ${data.getHours()}:${data.getMinutes()}:${data.getSeconds()}\n────────────────────────\n\n`);
-                    
+
                     if(Object.keys(commands).includes(separate[0])){
                         let command: command = new commands[separate[0]]();
                         command.run(message);
                         return;
                     }
-                    
+
                     let aliases = JSON.parse(readFileSync("./src/core/data/groups.json", "utf-8"));
                     if (!aliases[message.key.remoteJid]) return;
 

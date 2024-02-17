@@ -18,7 +18,6 @@ export function banner(text: string = logo) {
 }
 
 
-
 function center(text: string){
     const larguraTerminal = process.stdout.columns;
     const espacosAntes = Math.floor((larguraTerminal - text.length) / 2);

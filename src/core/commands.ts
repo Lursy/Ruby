@@ -27,11 +27,11 @@ export class menu implements command{
         let commands = Object.keys(require("./commands"));
         let space = " ".repeat(5);
         
-        content += `${space}\`\`\`╓═──┤\`\`\`MENU\`\`\`├──═╖\`\`\`\n`;
-        commands.forEach(item => {content += `${space}╠∙∙ *►* \`\`\`.${item}\`\`\`\n`});
-        content += `${space}\`\`\`╙═──────────═╜\`\`\``; 
+        content += `${space}╓═──┤MENU├──═╖\n`;
+        commands.forEach(item => {content += `${space}╠∙∙► \`\`\`.${item}\`\`\`\n`});
+        content += `${space}╙═──┤MENU├──═╜`; 
 
-        return await message.reply({caption: content, video: readFileSync("./src/static/ruby.mp4"), gifPlayback: true}, true);
+        return await message.reply({caption: content, video: {url: "./src/static/ruby.mp4"}, gifPlayback: true}, true);
     }
 }
 
@@ -43,22 +43,21 @@ export class help implements command{
     example: string = "use: *.help* _<nome de algum comando>_";
 
     run = async (message: Message, alias: string = undefined) => {
-        let info = message.text.slice(1).split(" ");
         let commands = require("./commands");
         this.example = alias?this.example.replace("help", alias):this.example;
         
-        if(info.length > 1){
-            if(Object.keys(commands).includes(info[1])){
-                let command: command = new commands[info[1]]();
+        if(message.splited.length > 1){
+            if(Object.keys(commands).includes(message.splited[1])){
+                let command: command = new commands[message.splited[1]]();
                 let response: string = `${initResponse(message.name, message.key.id)}*Descrição:*\n\t${command.description}\n\n*Examplo:*\n\t${command.example}`
                 return message.reply(response);
             }
 
             let aliases = JSON.parse(readFileSync("./src/core/data/groups.json", "utf-8"));
             for(let [key, value] of Object.entries(aliases[message.key.remoteJid])){
-                if((value as string[]).includes(info[1])){
+                if((value as string[]).includes(message.splited[1])){
                     let command: command = new commands[key]();
-                    let response: string = `${initResponse(message.name, message.key.id)}*Descrição:*\n\t${command.description}\n\n*Examplo:*\n\t${command.example.replaceAll(key, info[1])}`
+                    let response: string = `${initResponse(message.name, message.key.id)}*Descrição:*\n\t${command.description}\n\n*Examplo:*\n\t${command.example.replaceAll(key, message.splited[1])}`
                     return message.reply(response);
                 }
             }
@@ -84,11 +83,11 @@ export class ping implements command{
 }
 
 
-export class unlk implements command{
+export class unlock implements command{
     description: string = "Debloqueia qualquer midia em visualização única";
     adminOnly: boolean = false;
     groupOnly: boolean = false;
-    example: string = "use: _(marque uma mensagem ou adicione na legenda)_ *.unlk*";
+    example: string = "use: _(marque uma mensagem ou adicione na legenda)_ *.unlock*";
 
     run = async (message: Message) =>{
         let download = new downloads(message);
@@ -105,14 +104,16 @@ export class unlk implements command{
 
         let buffer: Buffer = await download.media_message(media);
 
+        if(!buffer) return message.reply("Erro ao decriptar imagem");
+
         if(media.mimetype.split("/")[0] === "video"){
-            return message.send({video: buffer, caption: message.text});
+            return message.send({ video: buffer, caption: message.text });
         }
         if(media.mimetype.split("/")[0] === "image"){
-            return message.send({image: buffer, caption: message.text});
+            return message.send({ image: buffer, caption: message.text });
         }
         if(media.mimetype.split("/")[0] === "audio"){
-            return message.send({audio: buffer});
+            return message.send({ audio: buffer });
         }
 
         return await message.reply("Marque uma midia de visualização única.");
@@ -153,11 +154,11 @@ export class to implements command{
     }
 }
 
-export class stck implements command{
+export class sticker implements command{
     description: string = "transforma imagem ou video em sticker";
     adminOnly: boolean = false;
     groupOnly: boolean = false;
-    example: string = "use: (marque um sticker) *.stck*";
+    example: string = "use: (marque um sticker) *.sticker*";
 
 
     run = async (message: Message) => {
@@ -168,12 +169,12 @@ export class stck implements command{
             let quot = message.essential(message.quoted);
             media = message.get_media(quot);
 
-            if(message.type == "stickerMessage") return await message.send("*Media incorreta*\n\nuse o comando .help stck para verificar as propriedades do comando");
+            if(message.type == "stickerMessage") return await message.send("*Media incorreta*\n\nuse o comando .help sticker para verificar as propriedades do comando");
 
             message.type = type;
         }
         
-        if(!media) return await message.send("Nenhuma media foi relacionada. use o comando .help stck para verificar as propriedades do comando");
+        if(!media) return await message.send("Nenhuma media foi relacionada. use o comando .help sticker para verificar as propriedades do comando");
         
         await message.react("⏱️");
 
@@ -181,7 +182,8 @@ export class stck implements command{
 
         let buffer: Buffer = await download.media_message(media);
         let conversor = new Conversor(message);
-        buffer = await conversor.toWebp(buffer, media.mimetype.split("/")[1]);
+        console.log(media.mimetype);
+        buffer = await conversor.toWebp(buffer, media.mimetype.split("/")[0]);
 
         return await message.send({sticker: buffer}).then(async (response) => {await message.react("✅"); return response});
     }
@@ -196,16 +198,15 @@ export class alias implements command{
 
 
     run = async (message: Message) => {
-        let separate = message.text.slice(1).split(" ");
         let data = JSON.parse(readFileSync("./src/core/data/groups.json", "utf-8"));
 
-        if(separate.length == 3 && separate.length > 4) return await message.send("*Sintaxe incompleta*\n\nuse _.help alias_ para verificar as propriedades do comando");
+        if(message.splited.length == 3 && message.splited.length > 4) return await message.send("*Sintaxe incompleta*\n\nuse _.help alias_ para verificar as propriedades do comando");
         
         let commands = Object.keys(require("./commands"));
 
         if(!data[message.key.remoteJid]) data[message.key.remoteJid] = {};
         
-        if(separate.length == 1){
+        if(message.splited.length == 1){
             let content = "*Menu de aliases*\n\n\n";
             for(let [key, value] of Object.entries(data[message.key.remoteJid])){
                 content += `*${key}* > _${(value as string[]).join(", ")}_\n\n`;
@@ -213,53 +214,84 @@ export class alias implements command{
             return await message.reply(content);
         }
         
-        if(separate.length == 4){
+        if(message.splited.length == 4){
             let admin = (await message.getGroup())?message.group.isAdmin:true;
             if(!admin) return await message.send("Somente admins podem utilizar esses parametros");
 
-            if(!commands.includes(separate[1])) return message.reply("Comando citado não existe, use o nome original do comadno para criar ou remover aliases");
+            if(!commands.includes(message.splited[1])) return message.reply("Comando citado não existe, use o nome original do comadno para criar ou remover aliases");
 
-            if(separate[2] == "--add"){
+            if(message.splited[2] == "--add"){
                 for(let [key, value] of Object.entries(data[message.key.remoteJid])){
-                    if((value as string[]).includes(separate[3])){
+                    if((value as string[]).includes(message.splited[3])){
                         console.log(data[message.key.remoteJid]);
-                        return await message.reply(`O alias ${separate[3]} já está em uso pelo comando ${key}`)
+                        return await message.reply(`O alias ${message.splited[3]} já está em uso pelo comando ${key}`)
                     }
                 }
-                if(!data[message.key.remoteJid][separate[1]]){
-                    data[message.key.remoteJid][separate[1]] = [separate[3]];
+                if(!data[message.key.remoteJid][message.splited[1]]){
+                    data[message.key.remoteJid][message.splited[1]] = [message.splited[3]];
                 }else{
-                    if(data[message.key.remoteJid][separate[1]].length == 10) return await message.send("Limite de aliases atingidos.");
-                    data[message.key.remoteJid][separate[1]].push(separate[3]);
+                    if(data[message.key.remoteJid][message.splited[1]].length == 10) return await message.send("Limite de aliases atingidos.");
+                    data[message.key.remoteJid][message.splited[1]].push(message.splited[3]);
                 }
             }
-            else if (separate[2] == "--remove"){
-                if(!data[message.key.remoteJid][separate[1]].includes(separate[3])) return await message.reply(`O alias "${separate[3]}" não foi encontrado na lista de aliases pertencente ao comando ${separate[1]}`);
+            else if (message.splited[2] == "--remove"){
+                if(!data[message.key.remoteJid][message.splited[1]].includes(message.splited[3])) return await message.reply(`O alias "${message.splited[3]}" não foi encontrado na lista de aliases pertencente ao comando ${message.splited[1]}`);
 
-                let index = data[message.key.remoteJid][separate[1]].indexOf(separate[3]);
-                data[message.key.remoteJid][separate[1]].splice(index, 1);
+                let index = data[message.key.remoteJid][message.splited[1]].indexOf(message.splited[3]);
+                data[message.key.remoteJid][message.splited[1]].splice(index, 1);
             }
             else{
-                return message.send(`*Erro de sintax*\n${separate[2]} não é um parametro valido! use --add ou --remove`);
+                return message.send(`*Erro de sintax*\n${message.splited[2]} não é um parametro valido! use --add ou --remove`);
             }
             writeFileSync("./src/core/data/groups.json", JSON.stringify(data, null, "\t"), "utf-8");
-            return await message.reply(`Alias ${separate[2]=="--add"?"adicionado":"removido"} com sucesso!`);
+            return await message.reply(`Alias ${message.splited[2]=="--add"?"adicionado":"removido"} com sucesso!`);
         }
         
-        if(!Object.keys(data[message.key.remoteJid]).includes(separate[1])){
+        if(!Object.keys(data[message.key.remoteJid]).includes(message.splited[1])){
             for(let [key, value] of Object.entries(data[message.key.remoteJid])){
-                if((value as string[]).includes(separate[1])){
-                    separate[1] = key;
+                if((value as string[]).includes(message.splited[1])){
+                    message.splited[1] = key;
                     break;
                 }
             }
         }
 
-        if(!Object.keys(data[message.key.remoteJid]).includes(separate[1])) return await message.reply("Comando citado não existe ou não possui aliases. Use os nomes originais para se referir aos comandos");
+        if(!Object.keys(data[message.key.remoteJid]).includes(message.splited[1])) return await message.reply("Comando citado não existe ou não possui aliases. Use os nomes originais para se referir aos comandos");
 
-        let aliases: string[] = data[message.key.remoteJid][separate[1]];
-        return message.reply(`*Lista de aliases*\n\nComando original: *${separate[1]}*\n\n*Aliases*\n- ${aliases.join("\n- ")}`);
+        let aliases: string[] = data[message.key.remoteJid][message.splited[1]];
+        return message.reply(`*Lista de aliases*\n\nComando original: *${message.splited[1]}*\n\n*Aliases*\n- ${aliases.join("\n- ")}`);
     }
 }
 
-module.exports = { alias, help, menu, stck, ping, unlk, to };
+class dload implements command{
+    description: string = "Baixa videos do YouTube, Instagram ou TikTok";
+    adminOnly: boolean = false;
+    groupOnly: boolean = false;
+    example: string = ".dload <url>";
+
+    run = async (message: Message) => {
+        const download = new downloads(message);
+        const tiktokUrlRegex = /https?:\/\/(?:m|www|vm)\.tiktok\.com\/.*?(?:\/(?:usr|v|embed|user|video)\/|\?shareId=|&item_id=)(\d+)|https?:\/\/(?:www\.)?vm\.tiktok\.com\/\S*/g;
+        const instagramUrlRegex = /https?:\/\/(www\.)?instagram\.com\/(p|tv|reel)\/([a-zA-Z0-9_-]+)\/?/;
+        const youtubeUrlRegex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/;
+        let url: string;
+
+        await message.react("⏱️");
+        if(tiktokUrlRegex.test(message.splited[1])){
+            url = await download.TikTok();
+        }
+        else if(instagramUrlRegex.test(message.splited[1])){
+            url = await download.Instagram();
+        }
+        else if(youtubeUrlRegex.test(message.splited[1])){
+            url = await download.YouTube();
+        }
+        else{
+            return await message.react("❌");
+        }
+        await message.reply({video: {url: url}});
+        await message.react("✅");
+    }
+}
+
+module.exports = { sticker, unlock, alias, dload, help, menu, ping, to };

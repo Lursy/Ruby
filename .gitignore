@@ -1,3 +1,4 @@
 node_modules/
 auth/
 src/core/data/
+yarn.lock

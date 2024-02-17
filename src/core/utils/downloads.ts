@@ -1,5 +1,10 @@
 import { MediaType, downloadContentFromMessage, proto } from "@whiskeysockets/baileys";
+import { TiktokDL } from "@tobyg74/tiktok-api-dl"
 import { Message } from "./Message";
+import ytdl from "ytdl-core";
+
+const instagramDl = require("@sasmeee/igdl");
+
 
 export type media = proto.Message.IImageMessage
 | proto.Message.IVideoMessage
@@ -8,29 +13,48 @@ export type media = proto.Message.IImageMessage
 | proto.Message.IDocumentMessage;
 
 export class downloads{
-    core_message: Message
+    message: Message;
+    separate: string[];
 
     constructor(message: Message){
-        this.core_message = message;
+        this.message = message;
+        this.separate = message.text.split(" ");
     }
 
     public media_message = async (media: media) => {
-        if(!media && this.core_message.quoted){
-            let quot = this.core_message.essential(this.core_message.quoted);
-            media = this.core_message.get_media(quot);
+        if(!media && this.message.quoted){
+            let quot = this.message.essential(this.message.quoted);
+            media = this.message.get_media(quot);
         }
         
         let buffer: Buffer = Buffer.from([]);
-
         let type = media.mimetype.split("/")[0] as MediaType;
-      
         let Mbuffer = await downloadContentFromMessage(media, !media["fileName"]?type:"document");
-    
-        
-        for await (const chunk of Mbuffer) {
-            buffer = Buffer.concat([buffer, chunk]);
+
+        try{
+            for await (const chunk of Mbuffer) {
+                buffer = Buffer.concat([buffer, chunk]);
+            }
+        }catch(err){
+            console.log(err);
         }
 
         return buffer;
+    }
+
+    public async TikTok(){
+        const { result } = await TiktokDL(this.message.splited[1], { version: "v1" });
+        return result[result.type][0];
+    }
+
+    public async Instagram(){
+        const result = await instagramDl(this.message.splited[1]);
+        return result[0].download_link
+    }
+
+    public async YouTube(){
+        const info = await ytdl.getInfo(this.message.splited[1]);
+        const result = ytdl.chooseFormat(info.formats, {filter: "audioandvideo"});
+        return result.url;
     }
 }

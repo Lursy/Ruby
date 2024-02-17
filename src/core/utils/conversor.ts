@@ -12,8 +12,9 @@ export class Conversor{
     }
 
 
-    toWebp = async (buffer: Buffer, from: string, type: string = "0") => {
-        if(from === "mp4" || type == "1"){
+    toWebp = async (buffer: Buffer, from: string) => {
+        console.log(from);
+        if(from !== "document"){
             let path = `./temp/${this.message.key.id}.mp4`;
             let pathOut = `./temp/${this.message.key.id}.webp`;
 
