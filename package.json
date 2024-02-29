@@ -28,6 +28,7 @@
     "@whiskeysockets/baileys": "^6.6.0",
     "fluent-ffmpeg": "^2.1.2",
     "inquirer": "^7.3.3",
+    "link-preview-js": "^3.0.5",
     "sharp": "^0.32.2",
     "ytdl-core": "^4.11.5"
   }

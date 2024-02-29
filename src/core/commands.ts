@@ -3,6 +3,7 @@ import { downloads } from "./utils/downloads";
 import { Conversor } from "./utils/conversor";
 import { Message } from "./utils/Message";
 import { bV, device } from "./utils/interface";
+import { generateLinkPreviewIfRequired, proto } from "@whiskeysockets/baileys";
 
 export interface command {
     description: string;
@@ -31,7 +32,7 @@ export class menu implements command{
         commands.forEach(item => {content += `${space}╠∙∙► \`\`\`.${item}\`\`\`\n`});
         content += `${space}╙═──┤MENU├──═╜`; 
 
-        return await message.reply({caption: content, video: {url: "./src/static/ruby.mp4"}, gifPlayback: true}, true);
+        return await message.reply({caption: content, video: {url: "./src/static/ruby.mp4"}, gifPlayback: true, contextInfo: {externalAdReply: {title: "Ruby 🟢 Online", body: "Venha ver meu código fonte! clique aqui.", thumbnail: readFileSync("./src/static/icon.png"), sourceUrl:"https://github.com/Lursy/Ruby", sourceType: "PHOTO"}}}, true);
     }
 }
 
@@ -158,7 +159,7 @@ export class sticker implements command{
     description: string = "transforma imagem ou video em sticker";
     adminOnly: boolean = false;
     groupOnly: boolean = false;
-    example: string = "use: (marque um sticker) *.sticker*";
+    example: string = "use: (marque uma media) *.sticker*";
 
 
     run = async (message: Message) => {

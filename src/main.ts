@@ -7,8 +7,7 @@ import pino from "pino";
 
 
 const NodeCache = require("node-cache");
-const cacheMedia =  new NodeCache({stdTTL: 60 * 5, useClones: false})
-const cacheMSG =  new NodeCache({stdTTL: 60 * 5, useClones: false})
+const cacheMedia =  new NodeCache({stdTTL: 60 * 5, useClones: false});
 
 export async function main() {
     process.stdout.write('\x1bc'); 
@@ -38,7 +37,6 @@ export async function main() {
         browser: ['Mac OS', 'chrome', '121.0.6167.159'],
         printQRInTerminal: !usePairingCode,
         mediaCache: cacheMedia,
-        msgRetryCounterCache: cacheMSG,
         mobile: false,
         auth: state,
         version

@@ -11,12 +11,12 @@ export async function receiveMessages(sock: WASocket){
             try{
                 if(m.messages[0].key.remoteJid === "status@broadcast") return;
                 if(m.type != "notify") return;
-
+            
                 let message = new Message(m.messages, sock);
                 let data = new Date();
 
                 console.log(`╓∙User: ${message.name}\n╟∙Command: ${message.isCommand}\n╟∙Message: ${message.text?message.text.length<25?message.text:message.text.substring(0, 20)+"[...]":message.type}\n╟∙Device: ${device(message.key.id)}\n╙∙Hora: ${data.toISOString().slice(11, 23)}\n`);
-
+                console.log(message.base.message);
                 if(message.isCommand){
                     let separate = message.text.slice(1).split(" ");
                     let commands = require("../commands");

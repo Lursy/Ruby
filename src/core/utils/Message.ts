@@ -198,12 +198,11 @@ export class Message{
     private selo = async () => {
         let quoted: proto.IWebMessageInfo = JSON.parse(JSON.stringify(this.base));;
         let Jid = this.key.participant?this.key.participant:this.key.remoteJid;
-        console.log(this.key);
         let number = Jid.split("@")[0];
         quoted.key.fromMe = false;
+        quoted.key.remoteJid = this.key.participant?this.key.remoteJid:"status@broadcast"
         quoted.key.participant = "0@s.whatsapp.net";
-        quoted.key.remoteJid = "0@s.whatsapp.net";
-        console.log(number)
+
         quoted.message = {
             contactMessage: {
                 displayName: `${this.name}`,
