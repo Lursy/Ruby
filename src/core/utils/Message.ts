@@ -196,7 +196,7 @@ export class Message{
     }
 
     private selo = async () => {
-        let quoted: proto.IWebMessageInfo = JSON.parse(JSON.stringify(this.base));;
+        let quoted: proto.IWebMessageInfo = JSON.parse(JSON.stringify(this.base));
         let Jid = this.key.participant?this.key.participant:this.key.remoteJid;
         let number = Jid.split("@")[0];
         quoted.key.fromMe = false;

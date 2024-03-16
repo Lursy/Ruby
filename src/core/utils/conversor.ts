@@ -26,7 +26,7 @@ export class Conversor{
                         .on("error", reject)
                         .on("end", () => resolve(true))
                         .addOutputOptions(['-vcodec', 'libwebp',
-                        '-vf', 'scale=\'iw*min(300/iw\,300/ih)\':\'ih*min(300/iw\,300/ih)\',format=rgba,pad=300:300:\'(300-iw)/2\':\'(300-ih)/2\':\'#00000000\',setsar=1,fps=30',
+                        '-vf', 'scale=\'iw*min(300/iw\,300/ih)\':\'ih*min(300/iw\,300/ih)\',format=rgba,pad=300:300:\'(300-iw)/2\':\'(300-ih)/2\':\'#00000000\',setsar=1,fps=20',
                         '-loop', '0',
                         '-ss', '00:00:00.0',
                         '-t', '00:00:05.0',

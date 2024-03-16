@@ -9,6 +9,7 @@ import pino from "pino";
 const NodeCache = require("node-cache");
 const cacheMedia =  new NodeCache({stdTTL: 60 * 5, useClones: false});
 
+
 export async function main() {
     process.stdout.write('\x1bc'); 
     const { state, saveCreds } = await useMultiFileAuthState("./auth");

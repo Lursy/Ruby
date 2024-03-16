@@ -3,11 +3,11 @@ import { downloads } from "./utils/downloads";
 import { Conversor } from "./utils/conversor";
 import { Message } from "./utils/Message";
 import { bV, device } from "./utils/interface";
-import { generateLinkPreviewIfRequired, proto } from "@whiskeysockets/baileys";
 
 export interface command {
     description: string;
     adminOnly: boolean;
+    groupOnly: boolean;
     example: string;
     run: (...any) => Promise<any>;
 }
@@ -16,6 +16,30 @@ export interface command {
 function initResponse(name: string, id: string){
     return `\`\`\`╓∙User:    ⌜${name}⌟\n╟∙Device:  ⌜${device(id)}⌟\n╟∙Version: ⌜${bV}⌟\n╙∙Prefix:  ⌜.⌟\`\`\`\n\n`
 }
+
+
+export class tag implements command{
+    description: string = "Marca todas as pessoas do grupo em uma mensagem";
+    adminOnly: boolean = true;
+    groupOnly: boolean = true;
+    example: string = "use: _(Marque uma mensagem)_ *.tag*";
+
+    run = async (message: Message) => {
+        if(message.splited[1]){
+            return await message.send({text: message.splited.slice(1).join(" "), mentions: message.group.members});
+        }
+        return await message.send({
+            forward: {
+                key: {
+                    fromMe: false, id: message.base.message.extendedTextMessage.contextInfo.stanzaId
+                },
+                message: message.quoted
+            },
+            mentions: message.group.members
+        });
+    }
+}
+
 
 export class menu implements command{
     description: string = "Exibe lista de comandos do bot";
@@ -295,4 +319,4 @@ class dload implements command{
     }
 }
 
-module.exports = { sticker, unlock, alias, dload, help, menu, ping, to };
+module.exports = { sticker, unlock, alias, dload, help, menu, ping, tag, to};

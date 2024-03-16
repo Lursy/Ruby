@@ -1,5 +1,5 @@
 import { MediaType, downloadContentFromMessage, proto } from "@whiskeysockets/baileys";
-import { TiktokDL } from "@tobyg74/tiktok-api-dl"
+import { TiktokDownloader as TiktokDL } from "@tobyg74/tiktok-api-dl"
 import { Message } from "./Message";
 import ytdl from "ytdl-core";
 
@@ -26,7 +26,9 @@ export class downloads{
             let quot = this.message.essential(this.message.quoted);
             media = this.message.get_media(quot);
         }
-        
+
+        //media.url = !media.directPath ? media?.url : null;
+
         let buffer: Buffer = Buffer.from([]);
         let type = media.mimetype.split("/")[0] as MediaType;
         let Mbuffer = await downloadContentFromMessage(media, !media["fileName"]?type:"document");
