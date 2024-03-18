@@ -3,6 +3,7 @@ import { downloads } from "./utils/downloads";
 import { Conversor } from "./utils/conversor";
 import { Message } from "./utils/Message";
 import { bV, device } from "./utils/interface";
+import { cob } from "./utils/payment";
 
 export interface command {
     description: string;
@@ -37,6 +38,22 @@ export class tag implements command{
             },
             mentions: message.group.members
         });
+    }
+}
+
+export class ticket implements command{
+    description: string = "Use para comprar tickets do sorteio";
+    adminOnly: boolean = false;
+    groupOnly: boolean = false;
+    example: string = "use: .ticket";
+
+    run = async (message: Message) => {
+        const response = await cob("0.01");
+        let payment = JSON.parse(readFileSync("./src/core/data/users.json", "utf-8"));
+        payment.total =+ 1;
+        payment.payment_pendding[response[0].txid] = [message.key.participant??message.key.remoteJid, {"pix": message.splited[1], "value": payment.total}];
+        writeFileSync("./src/core/data/users.json", JSON.stringify(payment, null, "\t"), "utf-8");
+        return message.send({caption: `pix copiaEcola: ${response[0].pixCopiaECola}`, image: response[1]});
     }
 }
 
@@ -319,4 +336,4 @@ class dload implements command{
     }
 }
 
-module.exports = { sticker, unlock, alias, dload, help, menu, ping, tag, to};
+module.exports = { sticker, ticket, unlock, alias, dload, help, menu, ping, tag, to};

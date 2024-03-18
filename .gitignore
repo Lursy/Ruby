@@ -1,5 +1,9 @@
 node_modules/
 auth/
-src/core/data/
+certificate/
+dist/
+
+
 yarn.lock
 package-lock.json
+.env

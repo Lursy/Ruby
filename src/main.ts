@@ -4,6 +4,7 @@ import { banner } from './core/utils/interface';
 import { Boom } from '@hapi/boom';
 import inquirer from 'inquirer';
 import pino from "pino";
+import { server } from './core/server';
 
 
 const NodeCache = require("node-cache");
@@ -14,7 +15,7 @@ export async function main() {
     process.stdout.write('\x1bc'); 
     const { state, saveCreds } = await useMultiFileAuthState("./auth");
     const { version } = await fetchLatestBaileysVersion();
-
+    
     let usePairingCode = false;
     
     if(!state.creds.registered){
@@ -42,8 +43,8 @@ export async function main() {
         auth: state,
         version
     });
-
-
+    
+    
     if (usePairingCode) {
         const phoneNumber = String((await inquirer.prompt([
             {
@@ -71,13 +72,14 @@ export async function main() {
         
         if(connection === 'close') {
             const shouldReconnect = (lastDisconnect.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
-
+            
             if(shouldReconnect) {
                 console.log("Reconectando...");
                 main()
             }
-
+            
         } else if(connection === 'open') {
+            server(sock);
             receiveMessages(sock);
             banner();
         }
